@@ -55,3 +55,5 @@ public void MyExampleFunc(CCSPlayerController? player)
 	<...>
 }
 ```
+### Screenshot
+![screenshot](https://github.com/user-attachments/assets/c2f6ad1e-48b2-449e-ab94-61d0a676da9d)
