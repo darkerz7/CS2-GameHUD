@@ -6,10 +6,10 @@ namespace CS2_GameHUD
 {
 	internal class API : IGameHUDAPI
 	{
-		public void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, Vector vec, System.Drawing.Color color, int fontsize, string fontname, float units, PointWorldTextJustifyHorizontal_t justifyhorizontal, PointWorldTextJustifyVertical_t justifyvertical, PointWorldTextReorientMode_t reorientmode)
+		public void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, Vector vec, System.Drawing.Color color, int fontsize, string fontname, float units, PointWorldTextJustifyHorizontal_t justifyhorizontal, PointWorldTextJustifyVertical_t justifyvertical, PointWorldTextReorientMode_t reorientmode, float bgborderheight, float bgborderwidth)
 		{
 			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
-			GameHUD.g_HUD[Player.Slot].Channel[channel].Params(vec, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode);
+			GameHUD.g_HUD[Player.Slot].Channel[channel].Params(vec, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode, bgborderheight, bgborderwidth);
 		}
 
 		public void Native_GameHUD_Show(CCSPlayerController Player, byte channel, string message, float time)

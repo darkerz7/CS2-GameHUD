@@ -27,6 +27,8 @@ namespace CS2_GameHUD
 		PointWorldTextJustifyHorizontal_t JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT;
 		PointWorldTextJustifyVertical_t JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP;
 		PointWorldTextReorientMode_t ReorientMode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE;
+		float BackgroundBorderHeight = 0.0f;
+		float BackgroundBorderWidth = 0.0f;
 
 		CounterStrikeSharp.API.Modules.Timers.Timer? timer;
 		CPointWorldText? WorldText;
@@ -55,7 +57,7 @@ namespace CS2_GameHUD
 			return true;
 		}
 
-		public void Params(Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE)
+		public void Params(Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
 			Position = vec;
 			Color = color;
@@ -65,6 +67,8 @@ namespace CS2_GameHUD
 			JustifyHorizontal = JH;
 			JustifyVertical = JV;
 			ReorientMode = RM;
+			BackgroundBorderHeight = BGBH;
+			BackgroundBorderWidth = BGBW;
 			CreateHUD();
 		}
 
@@ -84,6 +88,13 @@ namespace CS2_GameHUD
 			entity.JustifyHorizontal = JustifyHorizontal;
 			entity.JustifyVertical = JustifyVertical;
 			entity.ReorientMode = ReorientMode;
+
+			if (BackgroundBorderHeight != 0.0f || BackgroundBorderWidth != 0.0f)
+			{
+				entity.DrawBackground = true;
+				entity.BackgroundBorderHeight = BackgroundBorderHeight;
+				entity.BackgroundBorderWidth = BackgroundBorderWidth;
+			}
 
 			entity.DispatchSpawn();
 
@@ -130,6 +141,8 @@ namespace CS2_GameHUD
 			JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT;
 			JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP;
 			ReorientMode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE;
+			BackgroundBorderHeight = 0.0f;
+			BackgroundBorderWidth = 0.0f;
 		}
 
 		public bool EmptyMessage()

@@ -10,7 +10,7 @@ namespace CS2_GameHUDTest
 	{
 		public override string ModuleName => "GameHUD Test";
 		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "0.DZ.1";
+		public override string ModuleVersion => "0.DZ.2";
 
 		public static IGameHUDAPI? _api;
 
@@ -51,6 +51,15 @@ namespace CS2_GameHUDTest
 		{
 			if (_api == null || player == null || !player.IsValid) return;
 			_api.Native_GameHUD_Remove(player, 1);
+		}
+
+		[ConsoleCommand("css_hudtest4", "")]
+		[CommandHelper(minArgs: 0, usage: "", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+		public void OnCommandTest4(CCSPlayerController? player, CommandInfo command)
+		{
+			if (_api == null || player == null || !player.IsValid) return;
+			_api.Native_GameHUD_SetParams(player, 2, new CounterStrikeSharp.API.Modules.Utils.Vector(0, 0, 80), System.Drawing.Color.Aqua, 24, "Arial", 0.28f, PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER, PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_BOTTOM, PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, 0.3f, 0.15f);
+			_api.Native_GameHUD_Show(player, 2, "TestMessage3", 10.0f);
 		}
 
 		public static void PrintToConsole(string sMessage)
