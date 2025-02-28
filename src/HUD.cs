@@ -137,13 +137,13 @@ namespace CS2_GameHUD
 				WorldText!.JustifyVertical = JustifyVertical;
 				Utilities.SetStateChanged(WorldText, "CPointWorldText", "m_nJustifyVertical");
 			}
-			if(ReorientMode != RM)
+			if (ReorientMode != RM)
 			{
 				ReorientMode = RM;
 				WorldText!.ReorientMode = ReorientMode;
 				Utilities.SetStateChanged(WorldText, "CPointWorldText", "m_nReorientMode");
 			}
-			if(BackgroundBorderHeight != BGBH)
+			if (BackgroundBorderHeight != BGBH)
 			{
 				BackgroundBorderHeight = BGBH;
 				WorldText!.BackgroundBorderHeight = BackgroundBorderHeight;
@@ -155,6 +155,8 @@ namespace CS2_GameHUD
 				WorldText!.BackgroundBorderWidth = BackgroundBorderWidth;
 				Utilities.SetStateChanged(WorldText, "CPointWorldText", "m_flBackgroundBorderWidth");
 			}
+			WorldText!.DrawBackground = BackgroundBorderHeight != 0.0f || BackgroundBorderWidth != 0.0f;
+			Utilities.SetStateChanged(WorldText, "CPointWorldText", "m_bDrawBackground");
 		}
 
 		public bool CreateHUD()
