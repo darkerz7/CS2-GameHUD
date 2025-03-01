@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Modules.Entities;
 
 namespace CS2_GameHUD
 {
@@ -21,6 +20,13 @@ namespace CS2_GameHUD
 	public class HUDChannel(int slot)
 	{
 		Vector Position = new(0, 0, 50);
+		Vector CurrentPosion = new();
+		Vector vecForward = new();
+		Vector vecUp = new();
+		Vector vecRight = new();
+		Vector vecOffset = new();
+		Vector vecLast = new();
+		QAngle CurrentAngle = new();
 		System.Drawing.Color Color = System.Drawing.Color.White;
 		int FontSize = 18;
 		string FontName = "Verdana";
@@ -76,7 +82,9 @@ namespace CS2_GameHUD
 
 		public void Params(Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
-			Position = vec;
+			Position.X = vec.X;
+			Position.Y = vec.Y;
+			Position.Z = vec.Z;
 			Color = color;
 			FontSize = fontsize;
 			FontName = fontname;
@@ -94,12 +102,14 @@ namespace CS2_GameHUD
 			if (!WTIsValid()) return;
 			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
 			if (hudplayer == null || !hudplayer.IsValid) return;
-			if (Position != vec)
+			if (Position.X != vec.X || Position.Y != vec.Y || Position.Z != vec.Z)
 			{
-				Position = vec;
+				Position.X = vec.X;
+				Position.Y = vec.Y;
+				Position.Z = vec.Z;
 				var pawn = hudplayer.Pawn.Value!;
-				(Vector, QAngle) pos = GetPosition(hudplayer);
-				WorldText!.Teleport(pos.Item1, pos.Item2, null);
+				GetPosition(hudplayer);
+				WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
 			}
 			if (Color != color)
 			{
@@ -185,8 +195,8 @@ namespace CS2_GameHUD
 
 			entity.DispatchSpawn();
 
-			(Vector, QAngle) pos = GetPosition(hudplayer);
-			entity.Teleport(pos.Item1, pos.Item2, null);
+			GetPosition(hudplayer);
+			entity.Teleport(CurrentPosion, CurrentAngle, null);
 			if (GameHUD.g_HUD[PlayerSlot].ViewModel != null && GameHUD.g_HUD[PlayerSlot].ViewModel!.IsValid && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE)
 			{
 				entity.AcceptInput("SetParent", GameHUD.g_HUD[PlayerSlot].ViewModel!.Value, null, "!activator");
@@ -207,8 +217,8 @@ namespace CS2_GameHUD
 		public void ObserverHUD(CCSPlayerController hudplayer)
 		{
 			if (!WTIsValid() || EmptyMessage()) return;
-			(Vector, QAngle) pos = GetPosition(hudplayer);
-			WorldText!.Teleport(pos.Item1, pos.Item2, null);
+			GetPosition(hudplayer);
+			WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
 		}
 
 		public void RemoveHUD()
@@ -218,7 +228,9 @@ namespace CS2_GameHUD
 			if (WTIsValid()) WorldText!.Remove();
 			WorldText = null;
 
-			Position = new(0, 0, 50);
+			Position.X = 0;
+			Position.Y = 0;
+			Position.Z = 50;
 			Color = System.Drawing.Color.White;
 			FontSize = 18;
 			FontName = "Verdana";
@@ -247,24 +259,17 @@ namespace CS2_GameHUD
 			return WorldText!.Index;
 		}
 
-		(Vector, QAngle) GetPosition(CCSPlayerController hudplayer)
+		void GetPosition(CCSPlayerController hudplayer)
 		{
-			QAngle eyeAngles = hudplayer.Pawn.Value!.V_angle;
-			Vector forward = new(), right = new(), up = new();
-			NativeAPI.AngleVectors(eyeAngles.Handle, forward.Handle, right.Handle, up.Handle);
+			NativeAPI.AngleVectors(hudplayer.Pawn.Value!.V_angle.Handle, vecForward.Handle, vecRight.Handle, vecUp.Handle);
 
-			Vector offset = new();
-			offset += forward * Position.Z;
-			offset += right * Position.X;
-			offset += up * Position.Y;
-			QAngle angles = new()
-			{
-				Y = eyeAngles.Y + 270,
-				Z = 90 - eyeAngles.X,
-				X = 0
-			};
-			Vector vec = hudplayer.Pawn.Value!.AbsOrigin! + offset + new Vector(0, 0, hudplayer.Pawn.Value!.ViewOffset.Z);
-			return (vec, angles);
+			vecOffset = vecForward * Position.Z;
+			vecOffset += vecRight * Position.X;
+			vecOffset += vecUp * Position.Y;
+			CurrentAngle.Y = hudplayer.Pawn.Value!.V_angle.Y + 270;
+			CurrentAngle.Z = 90 - hudplayer.Pawn.Value!.V_angle.X;
+			vecLast.Z = hudplayer.Pawn.Value!.ViewOffset.Z;
+			CurrentPosion = hudplayer.Pawn.Value!.AbsOrigin! + vecOffset + vecLast;
 		}
 
 		void OnTimer()
