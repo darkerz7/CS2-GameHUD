@@ -85,6 +85,19 @@ namespace CS2_GameHUD
 			Position.X = vec.X;
 			Position.Y = vec.Y;
 			Position.Z = vec.Z;
+			ParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
+		}
+
+		public void Params(float x, float y, float z, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		{
+			Position.X = x;
+			Position.Y = y;
+			Position.Z = z;
+			ParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
+		}
+
+		public void ParamsWithOutVector(System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		{
 			Color = color;
 			FontSize = fontsize;
 			FontName = fontname;
@@ -107,10 +120,30 @@ namespace CS2_GameHUD
 				Position.X = vec.X;
 				Position.Y = vec.Y;
 				Position.Z = vec.Z;
-				var pawn = hudplayer.Pawn.Value!;
 				GetPosition(hudplayer);
 				WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
 			}
+			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
+		}
+
+		public void UpdateParams(float x, float y, float z, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		{
+			if (!WTIsValid()) return;
+			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
+			if (hudplayer == null || !hudplayer.IsValid) return;
+			if (Position.X != x || Position.Y != y || Position.Z != z)
+			{
+				Position.X = x;
+				Position.Y = y;
+				Position.Z = z;
+				GetPosition(hudplayer);
+				WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
+			}
+			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
+		}
+
+		public void UpdateParamsWithOutVector(System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		{
 			if (Color != color)
 			{
 				Color = color;

@@ -12,6 +12,11 @@ namespace CS2_GameHUD
 			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
 			GameHUD.g_HUD[Player.Slot].Channel[channel].Params(vec, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode, bgborderheight, bgborderwidth);
 		}
+		public void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, float x, float y, float z, Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25F, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0, float bgborderwidth = 0)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
+			GameHUD.g_HUD[Player.Slot].Channel[channel].Params(x, y, z, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode, bgborderheight, bgborderwidth);
+		}
 
 		public void Native_GameHUD_Show(CCSPlayerController Player, byte channel, string message, float time)
 		{
@@ -29,6 +34,11 @@ namespace CS2_GameHUD
 		{
 			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
 			GameHUD.g_HUD[Player.Slot].Channel[channel].UpdateParams(vec, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode, bgborderheight, bgborderwidth);
+		}
+		public void Native_GameHUD_UpdateParams(CCSPlayerController Player, byte channel, float x, float y, float z, Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25F, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0, float bgborderwidth = 0)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
+			GameHUD.g_HUD[Player.Slot].Channel[channel].UpdateParams(x, y, z, color, fontsize, fontname, units, justifyhorizontal, justifyvertical, reorientmode, bgborderheight, bgborderwidth);
 		}
 
 		public void Native_GameHUD_ShowPermanent(CCSPlayerController Player, byte channel, string message)
