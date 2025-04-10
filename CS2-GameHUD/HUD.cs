@@ -277,7 +277,7 @@ namespace CS2_GameHUD
 
 		public bool EmptyMessage()
 		{
-			if (Message.CompareTo("") == 0) return true;
+			if (string.Equals(Message, "")) return true;
 			return false;
 		}
 

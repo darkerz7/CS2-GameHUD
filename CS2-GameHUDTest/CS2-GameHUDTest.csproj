@@ -8,13 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.305" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.316" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CS2-GameHUDAPI">
-      <HintPath>API\CS2-GameHUDAPI.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\CS2-GameHUDAPI\CS2-GameHUDAPI.csproj" />
   </ItemGroup>
 
 </Project>

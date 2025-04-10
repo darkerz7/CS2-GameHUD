@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>CS2_GameHUD</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.316" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CS2-GameHUDAPI\CS2-GameHUDAPI.csproj" />
+  </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="if exist $(SolutionDir)build rmdir /s/q $(SolutionDir)build" />
+	  <Exec Command="if not exist $(SolutionDir)build mkdir $(SolutionDir)build" />
+	  <Exec Command="if not exist $(SolutionDir)build\plugins mkdir $(SolutionDir)build\plugins" />
+	  <Exec Command="if not exist $(SolutionDir)build\plugins\$(TargetName) mkdir $(SolutionDir)build\plugins\$(TargetName)" />
+	  <Exec Command="copy /Y $(TargetDir)$(TargetName).dll $(SolutionDir)build\plugins\$(TargetName)\$(TargetName).dll" />
+	  <Exec Command="if not exist $(SolutionDir)build\shared mkdir $(SolutionDir)build\shared" />
+	  <Exec Command="if not exist $(SolutionDir)build\shared\CS2-GameHUDAPI mkdir $(SolutionDir)build\shared\CS2-GameHUDAPI" />
+	  <Exec Command="copy /Y $(TargetDir)CS2-GameHUDAPI.dll $(SolutionDir)build\shared\CS2-GameHUDAPI\CS2-GameHUDAPI.dll" />
+  </Target>
+</Project>

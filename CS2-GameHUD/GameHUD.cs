@@ -17,10 +17,10 @@ namespace CS2_GameHUD
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
 		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "0.DZ.5";
+		public override string ModuleVersion => "1.DZ.0";
 
 		public static HUD[] g_HUD = new HUD[65];
-		public static IGameHUDAPI? _api;
+		static IGameHUDAPI? _api;
 
 		public override void Load(bool hotReload)
 		{

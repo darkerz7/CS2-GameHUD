@@ -12,7 +12,7 @@ namespace CS2_GameHUDTest
 		public override string ModuleAuthor => "DarkerZ [RUS]";
 		public override string ModuleVersion => "0.DZ.3";
 
-		public static IGameHUDAPI? _api;
+		static IGameHUDAPI? _api;
 
 		public override void OnAllPluginsLoaded(bool hotReload)
 		{
