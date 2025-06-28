@@ -66,5 +66,26 @@ namespace CS2_GameHUD
             if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
             GameHUD.g_HUD[Player.Slot].Channel[channel].SetTarget(target);
         }
+
+        // Getters
+       // public CCSPlayerPawn? Native_GameHUD_GetOwner(CCSPlayerController Player, byte channel)
+       // {
+        //    if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+       //     var hud = GameHUD.g_HUD[Player.Slot];
+        //    var hudChannel = hud.Channel[channel];
+       //     return hudChannel.GetOwner();
+       // }
+
+        public string? Native_GameHUD_GetKeyValue(CCSPlayerController Player, byte channel, string key)
+        {
+            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+            return GameHUD.g_HUD[Player.Slot].Channel[channel].GetKeyValue(key);
+        }
+
+        public string? Native_GameHUD_GetTarget(CCSPlayerController Player, byte channel)
+        {
+            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+            return GameHUD.g_HUD[Player.Slot].Channel[channel].GetTarget();
+        }
     }
 }
