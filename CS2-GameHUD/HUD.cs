@@ -320,5 +320,37 @@ namespace CS2_GameHUD
 				timer = null;
 			}
 		}
-	}
+
+        // 新增示例：用于设置 Owner、KeyValue、Target 等
+        // Add example methods to set Owner, KeyValue, Target, etc.
+        public void SetOwner(CCSPlayerPawn owner)
+        {
+            if (!WTIsValid()) CreateHUD();
+            if (WTIsValid())
+            {
+                WorldText!.AcceptInput("SetOwner", owner);
+            }
+        }
+
+        public void SetKeyValue(string key, string value)
+        {
+            if (!WTIsValid()) CreateHUD();
+            if (WTIsValid())
+            {
+                // 输入格式:  "KeyValue" <unused> <unused> <arguments> 
+                // Input format: "KeyValue" <unused> <unused> <arguments>
+                WorldText!.AcceptInput("KeyValue", null, null, $"{key} {value}");
+            }
+        }
+
+        public void SetTarget(string target)
+        {
+            if (!WTIsValid()) CreateHUD();
+            if (WTIsValid())
+            {
+                WorldText!.AcceptInput("KeyValue", null, null, $"targetname {target}");
+                WorldText!.Target = target;
+            }
+        }
+    }
 }

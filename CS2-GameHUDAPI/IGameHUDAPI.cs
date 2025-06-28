@@ -132,5 +132,39 @@ namespace CS2_GameHUDAPI
 		 * On error/errors:				Invalid player, Invalid channel
 		 */
 		void Native_GameHUD_Remove(CCSPlayerController Player, byte channel);
-	}
+
+        /**
+        * Sets the owner of the HUD entity for a desired channel.
+        *
+        * @param Player                CCSPlayerController for whom this request is made
+        * @param channel               Channel number where the owner needs to be set
+        * @param owner                 The pawn to be assigned as the owner of the HUD entity
+        *
+        * On error/errors:             Invalid player, Invalid channel
+        */
+        void Native_GameHUD_SetOwner(CCSPlayerController Player, byte channel, CCSPlayerPawn owner);
+
+        /**
+         * Sets a key-value pair on the HUD entity, typically used for further customization.
+         *
+         * @param Player                CCSPlayerController for whom this request is made
+         * @param channel               Channel number on which the key-value pair is set
+         * @param key                   The key to be set
+         * @param value                 The value to assign to the key
+         *
+         * On error/errors:             Invalid player, Invalid channel
+         */
+        void Native_GameHUD_SetKeyValue(CCSPlayerController Player, byte channel, string key, string value);
+
+        /**
+         * Assigns a target name to the HUD entity, which can be retrieved by other scripts or services.
+         *
+         * @param Player                CCSPlayerController for whom this request is made
+         * @param channel               Channel number whose target should be updated
+         * @param target                The new target name for the HUD entity
+         *
+         * On error/errors:             Invalid player, Invalid channel
+         */
+        void Native_GameHUD_SetTarget(CCSPlayerController Player, byte channel, string target);
+    }
 }

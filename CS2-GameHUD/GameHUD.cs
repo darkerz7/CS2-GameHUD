@@ -16,8 +16,8 @@ namespace CS2_GameHUD
 		public static readonly int MAXHUDCHANNELS = 32;
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
-		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "1.DZ.0";
+		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
+		public override string ModuleVersion => "1.DZ.1";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
