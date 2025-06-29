@@ -338,56 +338,55 @@ namespace CS2_GameHUD
 			}
 		}
 
-        // Setter methods
-        public void SetOwner(CCSPlayerPawn owner)
-        {
-            if (!WTIsValid()) CreateHUD();
-            if (WTIsValid())
-            {
-                WorldText!.AcceptInput("SetOwner", owner);
-                LastOwner = owner;
-            }
-        }
+		//Setter methods
+		public void SetOwner(CCSPlayerPawn owner)
+		{
+			if (!WTIsValid()) CreateHUD();
+			if (WTIsValid())
+			{
+				WorldText!.AcceptInput("SetOwner", owner);
+				LastOwner = owner;
+			}
+		}
 
-        public void SetKeyValue(string key, string value)
-        {
-            if (!WTIsValid()) CreateHUD();
-            if (WTIsValid())
-            {
-                // 输入格式:  "KeyValue" <unused> <unused> <arguments> 
-                // Input format: "KeyValue" <unused> <unused> <arguments>
-                WorldText!.AcceptInput("KeyValue", null, null, $"{key} {value}");
-                LastKeyValues[key] = value;
-            }
-        }
+		public void SetKeyValue(string key, string value)
+		{
+			if (!WTIsValid()) CreateHUD();
+			if (WTIsValid())
+			{
+				//Input format: "KeyValue" <unused> <unused> <arguments>
+				WorldText!.AcceptInput("KeyValue", null, null, $"{key} {value}");
+				LastKeyValues[key] = value;
+			}
+		}
 
-        public void SetTarget(string target)
-        {
-            if (!WTIsValid()) CreateHUD();
-            if (WTIsValid())
-            {
-                WorldText!.AcceptInput("KeyValue", null, null, $"targetname {target}");
-                WorldText!.Target = target;
-                LastTarget = target;
-            }
-        }
+		public void SetTarget(string target)
+		{
+			if (!WTIsValid()) CreateHUD();
+			if (WTIsValid())
+			{
+				WorldText!.AcceptInput("KeyValue", null, null, $"targetname {target}");
+				WorldText!.Target = target;
+				LastTarget = target;
+			}
+		}
 
-        // Getter methods
-        public CCSPlayerPawn? GetOwner()
-        {
-            return LastOwner;
-        }
+		//Getter methods
+		public CCSPlayerPawn? GetOwner()
+		{
+			return LastOwner;
+		}
 
-        public string? GetKeyValue(string key)
-        {
-            if (LastKeyValues.TryGetValue(key, out var value))
-                return value;
-            return null;
-        }
+		public string? GetKeyValue(string key)
+		{
+			if (LastKeyValues.TryGetValue(key, out var value))
+				return value;
+			return null;
+		}
 
-        public string? GetTarget()
-        {
-            return LastTarget;
-        }
-    }
+		public string? GetTarget()
+		{
+			return LastTarget;
+		}
+	}
 }

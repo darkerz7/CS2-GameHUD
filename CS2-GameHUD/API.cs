@@ -47,45 +47,44 @@ namespace CS2_GameHUD
 			GameHUD.g_HUD[Player.Slot].Channel[channel].ShowPermanent(message);
 		}
 
-        // 新增示例：用于设置 Owner、KeyValue、Target 等
-        // Added example: for setting Owner, KeyValue, Target, etc.
-        public void Native_GameHUD_SetOwner(CCSPlayerController Player, byte channel, CCSPlayerPawn owner)
-        {
-            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
-            GameHUD.g_HUD[Player.Slot].Channel[channel].SetOwner(owner);
-        }
+		// Added example: for setting Owner, KeyValue, Target, etc.
+		public void Native_GameHUD_SetOwner(CCSPlayerController Player, byte channel, CCSPlayerPawn owner)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
+			GameHUD.g_HUD[Player.Slot].Channel[channel].SetOwner(owner);
+		}
 
-        public void Native_GameHUD_SetKeyValue(CCSPlayerController Player, byte channel, string key, string value)
-        {
-            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
-            GameHUD.g_HUD[Player.Slot].Channel[channel].SetKeyValue(key, value);
-        }
+		public void Native_GameHUD_SetKeyValue(CCSPlayerController Player, byte channel, string key, string value)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
+			GameHUD.g_HUD[Player.Slot].Channel[channel].SetKeyValue(key, value);
+		}
 
-        public void Native_GameHUD_SetTarget(CCSPlayerController Player, byte channel, string target)
-        {
-            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
-            GameHUD.g_HUD[Player.Slot].Channel[channel].SetTarget(target);
-        }
+		public void Native_GameHUD_SetTarget(CCSPlayerController Player, byte channel, string target)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return;
+			GameHUD.g_HUD[Player.Slot].Channel[channel].SetTarget(target);
+		}
 
-        // Getters
-       // public CCSPlayerPawn? Native_GameHUD_GetOwner(CCSPlayerController Player, byte channel)
-       // {
-        //    if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
-       //     var hud = GameHUD.g_HUD[Player.Slot];
-        //    var hudChannel = hud.Channel[channel];
-       //     return hudChannel.GetOwner();
-       // }
+		//Getters
+		/*public CCSPlayerPawn? Native_GameHUD_GetOwner(CCSPlayerController Player, byte channel)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+			var hud = GameHUD.g_HUD[Player.Slot];
+			var hudChannel = hud.Channel[channel];
+			return hudChannel.GetOwner();
+		}*/
 
-        public string? Native_GameHUD_GetKeyValue(CCSPlayerController Player, byte channel, string key)
-        {
-            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
-            return GameHUD.g_HUD[Player.Slot].Channel[channel].GetKeyValue(key);
-        }
+		public string? Native_GameHUD_GetKeyValue(CCSPlayerController Player, byte channel, string key)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+			return GameHUD.g_HUD[Player.Slot].Channel[channel].GetKeyValue(key);
+		}
 
-        public string? Native_GameHUD_GetTarget(CCSPlayerController Player, byte channel)
-        {
-            if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
-            return GameHUD.g_HUD[Player.Slot].Channel[channel].GetTarget();
-        }
-    }
+		public string? Native_GameHUD_GetTarget(CCSPlayerController Player, byte channel)
+		{
+			if (!Player.IsValid || channel < 0 || channel >= GameHUD.MAXHUDCHANNELS) return null;
+			return GameHUD.g_HUD[Player.Slot].Channel[channel].GetTarget();
+		}
+	}
 }
