@@ -16,8 +16,8 @@ namespace CS2_GameHUD
 		public static readonly int MAXHUDCHANNELS = 32;
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
-		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "1.DZ.0";
+		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
+		public override string ModuleVersion => "1.DZ.1";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
@@ -158,6 +158,28 @@ namespace CS2_GameHUD
 						if (!g_HUD[player.Slot].Channel[j].EmptyMessage())
 							g_HUD[player.Slot].Channel[j].CreateHUD();
 			});
+		}
+
+		// --- Getters for HUD API (for direct plugin use, not required for API interface) ---
+		public static CCSPlayerPawn? GetHUDOwner(int playerSlot, int channel)
+		{
+			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
+			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
+			return g_HUD[playerSlot].Channel[channel].GetOwner();
+		}
+
+		public static string? GetHUDKeyValue(int playerSlot, int channel, string key)
+		{
+			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
+			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
+			return g_HUD[playerSlot].Channel[channel].GetKeyValue(key);
+		}
+
+		public static string? GetHUDTarget(int playerSlot, int channel)
+		{
+			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
+			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
+			return g_HUD[playerSlot].Channel[channel].GetTarget();
 		}
 
 		public static void PrintToConsole(string sMessage)
