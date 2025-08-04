@@ -1,16 +1,18 @@
-﻿using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Commands;
 using CS2_GameHUDAPI;
-using CounterStrikeSharp.API.Core.Capabilities;
 
 namespace CS2_GameHUDTest
 {
+	[MinimumApiVersion(330)]
 	public class GameHUDTest : BasePlugin
 	{
 		public override string ModuleName => "GameHUD Test";
 		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "0.DZ.4";
+		public override string ModuleVersion => "1.DZ.2";
 
 		static IGameHUDAPI? _api;
 
@@ -41,7 +43,7 @@ namespace CS2_GameHUDTest
 		public void OnCommandTest2(CCSPlayerController? player, CommandInfo command)
 		{
 			if (_api == null || player == null || !player.IsValid) return;
-			_api.Native_GameHUD_SetParams(player, 1, new CounterStrikeSharp.API.Modules.Utils.Vector(20, 20, 80), System.Drawing.Color.Red);
+			_api.Native_GameHUD_SetParams(player, 1, new System.Numerics.Vector3(20, 20, 80), System.Drawing.Color.Red);
 			_api.Native_GameHUD_Show(player, 1, "TestMessage2", 30.0f);
 		}
 
@@ -58,7 +60,7 @@ namespace CS2_GameHUDTest
 		public void OnCommandTest4(CCSPlayerController? player, CommandInfo command)
 		{
 			if (_api == null || player == null || !player.IsValid) return;
-			_api.Native_GameHUD_SetParams(player, 2, new CounterStrikeSharp.API.Modules.Utils.Vector(0, 0, 80), System.Drawing.Color.Aqua, 24, "Arial", 0.28f, PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER, PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_BOTTOM, PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, 0.3f, 0.15f);
+			_api.Native_GameHUD_SetParams(player, 2, new System.Numerics.Vector3(0, 0, 7), System.Drawing.Color.Aqua, 24, "Arial", 0.03f, PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER, PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_BOTTOM, PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, 0.3f, 0.15f);
 			_api.Native_GameHUD_Show(player, 2, "TestMessage3", 10.0f);
 		}
 
@@ -75,7 +77,7 @@ namespace CS2_GameHUDTest
 		public void OnCommandTest6(CCSPlayerController? player, CommandInfo command)
 		{
 			if (_api == null || player == null || !player.IsValid) return;
-			_api.Native_GameHUD_UpdateParams(player, 2, new CounterStrikeSharp.API.Modules.Utils.Vector(-30, -30, 80), System.Drawing.Color.Indigo, 16, "Verdana", 0.2f, PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_RIGHT, PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, 5.0f, 10.0f);
+			_api.Native_GameHUD_UpdateParams(player, 2, new System.Numerics.Vector3(-30, -30, 80), System.Drawing.Color.Indigo, 16, "Verdana", 0.2f, PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_RIGHT, PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, 5.0f, 10.0f);
 		}
 
 		[ConsoleCommand("css_hudtest7", "")]

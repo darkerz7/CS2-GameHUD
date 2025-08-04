@@ -1,32 +1,58 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CounterStrikeSharp.API;
 
 namespace CS2_GameHUD
 {
 	public class HUD
 	{
-		public CHandle<CCSGOViewModel>? ViewModel;
+		
 		readonly int iSlot;
 		public HUDChannel[] Channel;
+		public CPointOrient? PointOrient;
 		public HUD(int slot)
 		{
 			iSlot = slot;
 			Channel = new HUDChannel[GameHUD.MAXHUDCHANNELS];
 			for (int i = 0; i < Channel.Length; i++) Channel[i] = new HUDChannel(iSlot);
 		}
+
+		public bool CreateOrGetPointOrient()
+		{
+			if (PointOrient != null && PointOrient.IsValid) return true;
+
+			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(iSlot);
+			if (hudplayer == null || !hudplayer.IsValid) return false;
+			var pawn = hudplayer.Pawn.Value!;
+
+			CPointOrient? entOrient = Utilities.CreateEntityByName<CPointOrient>("point_orient");
+			if (entOrient == null || !entOrient.IsValid) return false;
+
+			entOrient.Active = true;
+			entOrient.GoalDirection = PointOrientGoalDirectionType_t.eEyesForward;
+			entOrient.DispatchSpawn();
+
+			System.Numerics.Vector3 vecPos = (System.Numerics.Vector3)pawn.AbsOrigin! with { Z = pawn.AbsOrigin!.Z + pawn.ViewOffset.Z};
+			entOrient.Teleport(vecPos, null, null);
+			entOrient.AcceptInput("SetParent", pawn, null, "!activator");
+			entOrient.AcceptInput("SetTarget", pawn, null, "!activator");
+			//entOrient.AcceptInput("SetParentAttachmentMaintainOffset", pawn, null, "look_straight_ahead_stand");
+
+			PointOrient = entOrient;
+			return true;
+		}
 	}
 
 	public class HUDChannel(int slot)
 	{
-		Vector Position = new(0, 0, 50);
-		Vector CurrentPosion = new();
+		System.Numerics.Vector3 Position = new(0, 0, 7);
+		System.Numerics.Vector3 CurrentPosition = new();
+		System.Numerics.Vector3 CurrentAngle = new();
+
 		Vector vecForward = new();
 		Vector vecUp = new();
 		Vector vecRight = new();
-		Vector vecOffset = new();
-		Vector vecLast = new();
-		QAngle CurrentAngle = new();
+		
 		System.Drawing.Color Color = System.Drawing.Color.White;
 		int FontSize = 18;
 		string FontName = "Verdana";
@@ -85,7 +111,7 @@ namespace CS2_GameHUD
 			return true;
 		}
 
-		public void Params(Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		public void Params(System.Numerics.Vector3 vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
 			Position.X = vec.X;
 			Position.Y = vec.Y;
@@ -115,7 +141,7 @@ namespace CS2_GameHUD
 			CreateHUD();
 		}
 
-		public void UpdateParams(Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
+		public void UpdateParams(System.Numerics.Vector3 vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
 			if (!WTIsValid()) return;
 			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
@@ -125,8 +151,9 @@ namespace CS2_GameHUD
 				Position.X = vec.X;
 				Position.Y = vec.Y;
 				Position.Z = vec.Z;
-				GetPosition(hudplayer);
-				WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
+				if (GameHUD.g_bMethod) GetPosition();
+				else GetPosition(hudplayer);
+				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
 		}
@@ -141,8 +168,9 @@ namespace CS2_GameHUD
 				Position.X = x;
 				Position.Y = y;
 				Position.Z = z;
-				GetPosition(hudplayer);
-				WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
+				if (GameHUD.g_bMethod) GetPosition();
+				else GetPosition(hudplayer);
+				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
 		}
@@ -206,13 +234,20 @@ namespace CS2_GameHUD
 			WorldText!.DrawBackground = BackgroundBorderHeight != 0.0f || BackgroundBorderWidth != 0.0f;
 			Utilities.SetStateChanged(WorldText, "CPointWorldText", "m_bDrawBackground");
 		}
-
 		public bool CreateHUD()
 		{
+			if (WTIsValid()) WorldText!.Remove();
+			WorldText = null;
+
 			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
 			if (hudplayer == null || !hudplayer.IsValid) return false;
 			var pawn = hudplayer.Pawn.Value!;
-			CPointWorldText entity = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext")!;
+
+			if (GameHUD.g_bMethod && !GameHUD.g_HUD[PlayerSlot].CreateOrGetPointOrient()) return false;
+
+			CPointWorldText? entity = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext");
+			if (entity == null || !entity.IsValid) return false;
+
 			entity.FontSize = FontSize;
 			entity.FontName = FontName;
 			entity.Enabled = true;
@@ -233,20 +268,19 @@ namespace CS2_GameHUD
 
 			entity.DispatchSpawn();
 
-			GetPosition(hudplayer);
-			entity.Teleport(CurrentPosion, CurrentAngle, null);
-			if (GameHUD.g_HUD[PlayerSlot].ViewModel != null && GameHUD.g_HUD[PlayerSlot].ViewModel!.IsValid && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE)
+			if (GameHUD.g_bMethod)
 			{
-				entity.AcceptInput("SetParent", GameHUD.g_HUD[PlayerSlot].ViewModel!.Value, null, "!activator");
-			}
-			else
+				entity.AcceptInput("SetParent", GameHUD.g_HUD[PlayerSlot].PointOrient, null, "!activator");
+				GetPosition();
+				entity.Teleport(CurrentPosition, CurrentAngle, null);
+			} else
 			{
 				entity.AcceptInput("SetParent", pawn, null, "!activator");
+				GetPosition(hudplayer);
+				entity.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 
-			if (WTIsValid()) WorldText!.Remove();
-
-			WorldText = entity;
+				WorldText = entity;
 			WorldText.AcceptInput("SetMessage", null, null, Message);
 
 			// Restore last known owner, target, keyvalues if any
@@ -257,14 +291,16 @@ namespace CS2_GameHUD
 			foreach (var kv in LastKeyValues)
 				SetKeyValue(kv.Key, kv.Value);
 
+			//Console.WriteLine($"[Debug:HUD] WorldText: {WorldText.Index} Orient: {GameHUD.g_HUD[PlayerSlot].PointOrient?.Index}");
+
 			return true;
 		}
 
-		public void ObserverHUD(CCSPlayerController hudplayer)
+		public void ShowHUD(CCSPlayerController hudplayer)
 		{
 			if (!WTIsValid() || EmptyMessage()) return;
 			GetPosition(hudplayer);
-			WorldText!.Teleport(CurrentPosion, CurrentAngle, null);
+			WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 		}
 
 		public void RemoveHUD()
@@ -276,7 +312,7 @@ namespace CS2_GameHUD
 
 			Position.X = 0;
 			Position.Y = 0;
-			Position.Z = 50;
+			Position.Z = 7;
 			Color = System.Drawing.Color.White;
 			FontSize = 18;
 			FontName = "Verdana";
@@ -311,15 +347,29 @@ namespace CS2_GameHUD
 
 		void GetPosition(CCSPlayerController hudplayer)
 		{
+			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)hudplayer.Pawn.Value!.V_angle;
 			NativeAPI.AngleVectors(hudplayer.Pawn.Value!.V_angle.Handle, vecForward.Handle, vecRight.Handle, vecUp.Handle);
+			CurrentPosition = (System.Numerics.Vector3)hudplayer.Pawn.Value!.AbsOrigin!;
+			CurrentPosition += (System.Numerics.Vector3)vecForward * Position.Z;
+			CurrentPosition += (System.Numerics.Vector3)vecRight * Position.X;
+			CurrentPosition += (System.Numerics.Vector3)vecUp * Position.Y;
+			CurrentPosition += new System.Numerics.Vector3(0, 0, hudplayer.Pawn.Value!.ViewOffset.Z);
 
-			vecOffset = vecForward * Position.Z;
-			vecOffset += vecRight * Position.X;
-			vecOffset += vecUp * Position.Y;
-			CurrentAngle.Y = hudplayer.Pawn.Value!.V_angle.Y + 270;
-			CurrentAngle.Z = 90 - hudplayer.Pawn.Value!.V_angle.X;
-			vecLast.Z = hudplayer.Pawn.Value!.ViewOffset.Z;
-			CurrentPosion = hudplayer.Pawn.Value!.AbsOrigin! + vecOffset + vecLast;
+			CurrentAngle.Y = Angle.Y + 270;
+			CurrentAngle.Z = 90 - Angle.X;
+		}
+		void GetPosition()
+		{
+			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsRotation!;
+			
+			NativeAPI.AngleVectors(GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsRotation!.Handle, vecForward.Handle, vecRight.Handle, vecUp.Handle);
+			CurrentPosition = (System.Numerics.Vector3)GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsOrigin!;
+			CurrentPosition += (System.Numerics.Vector3)vecForward * Position.Z;
+			CurrentPosition += (System.Numerics.Vector3)vecRight * Position.X;
+			CurrentPosition += (System.Numerics.Vector3)vecUp * Position.Y;
+
+			CurrentAngle.Y = Angle.Y + 270;
+			CurrentAngle.Z = 90 - Angle.X;
 		}
 
 		void OnTimer()

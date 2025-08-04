@@ -3,25 +3,27 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Core.Capabilities;
-using CounterStrikeSharp.API.Modules.Memory;
-using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Cvars.Validators;
 using CS2_GameHUDAPI;
 using static CounterStrikeSharp.API.Core.Listeners;
 
 namespace CS2_GameHUD
 {
-	[MinimumApiVersion(285)]
+	[MinimumApiVersion(330)]
 	public class GameHUD : BasePlugin
 	{
 		public static readonly int MAXHUDCHANNELS = 32;
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
 		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
-		public override string ModuleVersion => "1.DZ.1";
+		public override string ModuleVersion => "1.DZ.2";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
+		public static bool g_bMethod = false;
 
+		public FakeConVar<bool> Cvar_Method = new("css_gamehud_method", "true - point_orient, false - teleport", false, flags: ConVarFlags.FCVAR_NOTIFY, new RangeValidator<bool>(false, true));
 		public override void Load(bool hotReload)
 		{
 			for (int i = 0; i < g_HUD.Length; i++) g_HUD[i] = new HUD(i);
@@ -37,32 +39,39 @@ namespace CS2_GameHUD
 				PrintToConsole("API Failed!");
 			}
 
-			RegisterEventHandler<EventPlayerConnectFull>(OnEventPlayerConnectFull);
+			g_bMethod = Cvar_Method.Value;
+			Cvar_Method.ValueChanged += (sender, value) =>
+			{
+				g_bMethod = value;
+				PrintToConsole($"Cvar 'css_hud_method' has been changed to '{value}'");
+			};
+
 			RegisterEventHandler<EventPlayerDisconnect>(OnEventPlayerDisconnect);
 			RegisterEventHandler<EventPlayerSpawn>(OnEventPlayerSpawnPost);
 			RegisterEventHandler<EventPlayerDeath>(OnEventPlayerDeathPost);
 			RegisterEventHandler<EventRoundStart>(OnEventRoundStart);
 			RegisterListener<CheckTransmit>(OnTransmit);
 			RegisterListener<OnTick>(OnOnTick);
-
-			if (hotReload)
-			{
-				Utilities.GetPlayers().Where(p => p is { IsValid: true, IsBot: false, IsHLTV: false }).ToList().ForEach(player =>
-				{
-					CreateViewModel(player);
-				});
-			}
 		}
 
 		public override void Unload(bool hotReload)
 		{
-			DeregisterEventHandler<EventPlayerConnectFull>(OnEventPlayerConnectFull);
 			DeregisterEventHandler<EventPlayerDisconnect>(OnEventPlayerDisconnect);
 			DeregisterEventHandler<EventPlayerSpawn>(OnEventPlayerSpawnPost);
 			DeregisterEventHandler<EventPlayerDeath>(OnEventPlayerDeathPost);
 			DeregisterEventHandler<EventRoundStart>(OnEventRoundStart);
 			RemoveListener<CheckTransmit>(OnTransmit);
 			RemoveListener<OnTick>(OnOnTick);
+
+			foreach (HUD hud in g_HUD)
+			{
+				foreach (HUDChannel channel in hud.Channel)
+				{
+					channel.RemoveHUD();
+				}
+				hud.PointOrient?.Remove();
+				hud.PointOrient = null;
+			}
 		}
 
 		[GameEventHandler(mode: HookMode.Post)]
@@ -87,14 +96,10 @@ namespace CS2_GameHUD
 			if(player == null || !player.IsValid) return HookResult.Continue;
 			int iSlot = player.Slot;
 			for (int j = 0; j < g_HUD[iSlot].Channel.Length; j++) g_HUD[iSlot].Channel[j].RemoveHUD();
-			g_HUD[iSlot].ViewModel = null;
-			return HookResult.Continue;
-		}
-
-		private HookResult OnEventPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
-		{
-			CreateViewModel(@event.Userid);
-
+			
+			if (g_HUD[iSlot].PointOrient != null && g_HUD[iSlot].PointOrient!.IsValid) g_HUD[iSlot].PointOrient!.Remove();
+			g_HUD[iSlot].PointOrient = null;
+			
 			return HookResult.Continue;
 		}
 
@@ -109,12 +114,13 @@ namespace CS2_GameHUD
 
 		private void OnOnTick()
 		{
+			if (g_bMethod) return;
 			for (int i = 0; i < g_HUD.Length; i++)
 			{
 				CCSPlayerController? player = Utilities.GetPlayerFromSlot(i);
-				if (player != null && player.IsValid && player.Pawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+				if (player != null && player.IsValid)
 				{
-					for (int j = 0; j < g_HUD[i].Channel.Length; j++) g_HUD[i].Channel[j].ObserverHUD(player);
+					for (int j = 0; j < g_HUD[i].Channel.Length; j++) g_HUD[i].Channel[j].ShowHUD(player);
 				}
 			}
 		}
@@ -132,21 +138,6 @@ namespace CS2_GameHUD
 							if(g_HUD[i].Channel[j].WTIsValid()) info.TransmitEntities.Remove(g_HUD[i].Channel[j].WTGetIndex());
 				}
 			}
-		}
-
-		private static void CreateViewModel(CCSPlayerController? player)
-		{
-			if (player == null || !player.IsValid) return;
-			CCSPlayerPawn pawn = player.PlayerPawn.Value!;
-			var handle = new CHandle<CCSGOViewModel>((IntPtr)(pawn.ViewModelServices!.Handle + Schema.GetSchemaOffset("CCSPlayer_ViewModelServices", "m_hViewModel") + 4));
-			if (!handle.IsValid)
-			{
-				CCSGOViewModel viewmodel = Utilities.CreateEntityByName<CCSGOViewModel>("predicted_viewmodel")!;
-				handle.Raw = viewmodel.EntityHandle.Raw;
-				Utilities.SetStateChanged(pawn, "CCSPlayerPawnBase", "m_pViewModelServices");
-			}
-
-			g_HUD[player.Slot].ViewModel = handle;
 		}
 
 		private static void UpdateEvent(CCSPlayerController? player)

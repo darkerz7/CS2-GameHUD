@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 
-//VersionAPI: 0.DZ.5
+//VersionAPI: 1.DZ.2
 
 namespace CS2_GameHUDAPI
 {
@@ -10,7 +10,7 @@ namespace CS2_GameHUDAPI
 		public static PluginCapability<IGameHUDAPI> Capability { get; } = new("gamehud:api");
 
 		/**
-		 * Initializes hud with the specified parameters
+		 * Initializes hud with the specified parameters (Not recommended, use System.Numerics.Vector3)
 		 *
 		 * @param Player				CCSPlayerController for whom the hud will be initialized
 		 * @param channel				Channel number to initialize
@@ -31,7 +31,28 @@ namespace CS2_GameHUDAPI
 		void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, CounterStrikeSharp.API.Modules.Utils.Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0.0f, float bgborderwidth = 0.0f);
 
 		/**
-		 * Initializes hud with the specified parameters
+		 * Initializes hud with the specified parameters (Recommended)
+		 *
+		 * @param Player				CCSPlayerController for whom the hud will be initialized
+		 * @param channel				Channel number to initialize
+		 * @param vec3					Vector3 where the hud will be located relative to the player
+		 * @param color					Color of hud
+		 * @param fontsize				Hud font size
+		 * @param fontname				Hud font name
+		 * @param units					Hud world units per px
+		 * @param justifyhorizontal		Horizontal alignment of hud
+		 * @param justifyvertical		Vertical alignment of hud
+		 * @param reorientmode			Reorient mode for hud
+		 * @param bgborderheight		Background border height if needed (to disable both must be equal to 0.0f)
+		 * @param bgborderwidth			Background border width if needed
+		 * 
+		 *
+		 * On error/errors:				Invalid player, Invalid channel
+		 */
+		void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, System.Numerics.Vector3 vec3, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0.0f, float bgborderwidth = 0.0f);
+
+		/**
+		 * Initializes hud with the specified parameters (Recommended)
 		 *
 		 * @param Player				CCSPlayerController for whom the hud will be initialized
 		 * @param channel				Channel number to initialize
@@ -54,7 +75,7 @@ namespace CS2_GameHUDAPI
 		void Native_GameHUD_SetParams(CCSPlayerController Player, byte channel, float X, float Y, float Z, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0.0f, float bgborderwidth = 0.0f);
 
 		/**
-		 * Initializes hud with the specified parameters
+		 * Initializes hud with the specified parameters (Not recommended, use System.Numerics.Vector3)
 		 *
 		 * @param Player				CCSPlayerController for whom the hud will be initialized
 		 * @param channel				Channel number to initialize
@@ -75,7 +96,28 @@ namespace CS2_GameHUDAPI
 		void Native_GameHUD_UpdateParams(CCSPlayerController Player, byte channel, CounterStrikeSharp.API.Modules.Utils.Vector vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0.0f, float bgborderwidth = 0.0f);
 
 		/**
-		 * Initializes hud with the specified parameters
+		 * Initializes hud with the specified parameters (Recommended)
+		 *
+		 * @param Player				CCSPlayerController for whom the hud will be initialized
+		 * @param channel				Channel number to initialize
+		 * @param vec3					Vector where the hud will be located relative to the player
+		 * @param color					Color of hud
+		 * @param fontsize				Hud font size
+		 * @param fontname				Hud font name
+		 * @param units					Hud world units per px
+		 * @param justifyhorizontal		Horizontal alignment of hud
+		 * @param justifyvertical		Vertical alignment of hud
+		 * @param reorientmode			Reorient mode for hud
+		 * @param bgborderheight		Background border height if needed (to disable both must be equal to 0.0f)
+		 * @param bgborderwidth			Background border width if needed
+		 * 
+		 *
+		 * On error/errors:				Invalid player, Invalid channel
+		 */
+		void Native_GameHUD_UpdateParams(CCSPlayerController Player, byte channel, System.Numerics.Vector3 vec3, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t justifyhorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t justifyvertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t reorientmode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float bgborderheight = 0.0f, float bgborderwidth = 0.0f);
+
+		/**
+		 * Initializes hud with the specified parameters (Recommended)
 		 *
 		 * @param Player				CCSPlayerController for whom the hud will be initialized
 		 * @param channel				Channel number to initialize
