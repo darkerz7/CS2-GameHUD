@@ -58,4 +58,4 @@ jobs:
         generateReleaseNotes: true
         makeLatest: true
         body: |
-          [Core]${{ env.PROJECT_NAME }} release ${{ env.BUILD_NUMBER }}. API for displaying messages to the player. GameText analogue (using point_worldtext). Static worldtext for alive players and dynamic for nonalive players
+          [Core]${{ env.PROJECT_NAME }} release ${{ env.BUILD_NUMBER }}. API for displaying messages to the player. GameText analogue (using point_worldtext)
