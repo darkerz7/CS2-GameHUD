@@ -16,7 +16,7 @@ namespace CS2_GameHUD
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
 		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
-		public override string ModuleVersion => "1.DZ.3.3";
+		public override string ModuleVersion => "1.DZ.3.4";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
@@ -119,11 +119,10 @@ namespace CS2_GameHUD
 		private void OnOnTick()
 		{
 			if (g_bMethod) return;
-			var t = new Task(() =>
+			Task.Run(() =>
 			{
 				Parallel.ForEach(g_HUD, (hud) => hud.ShowAllHUD());
 			});
-			t.Start();
 		}
 
 		void OnTransmit(CCheckTransmitInfoList infoList)
@@ -143,7 +142,7 @@ namespace CS2_GameHUD
 
 		private static void UpdateEvent(CCSPlayerController? player)
 		{
-			var t = new Task(() =>
+			Task.Run(() =>
 			{
 				if (player != null && player.IsValid)
 					Parallel.ForEach(g_HUD[player.Slot].Channel, (pair) => {
@@ -157,7 +156,6 @@ namespace CS2_GameHUD
 					});
 						
 			});
-			t.Start();
 		}
 
 		// --- Getters for HUD API (for direct plugin use, not required for API interface) ---

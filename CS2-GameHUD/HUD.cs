@@ -64,12 +64,11 @@ namespace CS2_GameHUD
 
 		public void ShowAllHUD()
 		{
-			var t = new Task(() =>
+			Task.Run(() =>
 			{
 				if (HUDPlayer != null && HUDPlayer.IsValid)
 					Parallel.ForEach(Channel, (pair) => pair.Value.ShowHUD());
 			});
-			t.Start();
 		}
 
 		public void RemoveAllHUD()
