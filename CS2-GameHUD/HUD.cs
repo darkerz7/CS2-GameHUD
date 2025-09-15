@@ -324,11 +324,10 @@ namespace CS2_GameHUD
 
 		public void ShowHUD()
 		{
-			if (!WTIsValid() || EmptyMessage()) return;
-			GetPositionTeleport();
 			Server.NextFrame(() =>
 			{
 				if (!WTIsValid() || EmptyMessage()) return;
+				GetPositionTeleport();
 				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 			});
 		}
