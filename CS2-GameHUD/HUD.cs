@@ -57,6 +57,8 @@ namespace CS2_GameHUD
 
 		public void RemoveChannel(byte channel)
 		{
+			Channel.TryGetValue(channel, out HUDChannel? chnl);
+			chnl?.WTRemove();
 			Channel.Remove(channel);
 		}
 
@@ -72,6 +74,7 @@ namespace CS2_GameHUD
 
 		public void RemoveAllHUD()
 		{
+			foreach (var pair in Channel) pair.Value.WTRemove();
 			Channel.Clear();
 		}
 	}
@@ -107,7 +110,7 @@ namespace CS2_GameHUD
 			if (MessageText == null || fTime <= 0.0f) return false;
 
 			CloseTimer();
-
+			
 			if (!WTIsValid()) CreateHUD();
 			if (WTIsValid())
 			{
@@ -258,7 +261,7 @@ namespace CS2_GameHUD
 		}
 		public bool CreateHUD()
 		{
-			if (WTIsValid()) WorldText!.Remove();
+			WTRemove();
 			WorldText = null;
 
 			if (HUDPlayer == null || !HUDPlayer.IsValid) return false;
@@ -342,6 +345,11 @@ namespace CS2_GameHUD
 		public uint WTGetIndex()
 		{
 			return WorldText!.Index;
+		}
+
+		public void WTRemove()
+		{
+			if (WTIsValid()) WorldText!.Remove();
 		}
 
 		void GetPositionTeleport()
