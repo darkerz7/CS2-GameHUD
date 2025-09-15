@@ -13,11 +13,10 @@ namespace CS2_GameHUD
 	[MinimumApiVersion(330)]
 	public class GameHUD : BasePlugin
 	{
-		public static readonly int MAXHUDCHANNELS = 32;
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
 		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
-		public override string ModuleVersion => "1.DZ.2";
+		public override string ModuleVersion => "1.DZ.3";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
@@ -26,7 +25,7 @@ namespace CS2_GameHUD
 		public FakeConVar<bool> Cvar_Method = new("css_gamehud_method", "true - point_orient, false - teleport", false, flags: ConVarFlags.FCVAR_NOTIFY, new RangeValidator<bool>(false, true));
 		public override void Load(bool hotReload)
 		{
-			for (int i = 0; i < g_HUD.Length; i++) g_HUD[i] = new HUD(i);
+			for (int i = 0; i < g_HUD.Length; i++) g_HUD[i] = new HUD();
 
 			try
 			{
@@ -46,6 +45,7 @@ namespace CS2_GameHUD
 				PrintToConsole($"Cvar 'css_hud_method' has been changed to '{value}'");
 			};
 
+			RegisterEventHandler<EventPlayerConnectFull>(OnEventPlayerConnectFull);
 			RegisterEventHandler<EventPlayerDisconnect>(OnEventPlayerDisconnect);
 			RegisterEventHandler<EventPlayerSpawn>(OnEventPlayerSpawnPost);
 			RegisterEventHandler<EventPlayerDeath>(OnEventPlayerDeathPost);
@@ -56,6 +56,7 @@ namespace CS2_GameHUD
 
 		public override void Unload(bool hotReload)
 		{
+			DeregisterEventHandler<EventPlayerConnectFull>(OnEventPlayerConnectFull);
 			DeregisterEventHandler<EventPlayerDisconnect>(OnEventPlayerDisconnect);
 			DeregisterEventHandler<EventPlayerSpawn>(OnEventPlayerSpawnPost);
 			DeregisterEventHandler<EventPlayerDeath>(OnEventPlayerDeathPost);
@@ -65,13 +66,29 @@ namespace CS2_GameHUD
 
 			foreach (HUD hud in g_HUD)
 			{
-				foreach (HUDChannel channel in hud.Channel)
-				{
-					channel.RemoveHUD();
-				}
-				hud.PointOrient?.Remove();
-				hud.PointOrient = null;
+				hud.RemoveAllHUD();
+				hud.RemovePointOrient();
 			}
+		}
+
+		private HookResult OnEventPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
+		{
+			CCSPlayerController? player = @event.Userid;
+			if (player == null || !player.IsValid) return HookResult.Continue;
+			g_HUD[player.Slot].SetHUDPlayer(player);
+
+			return HookResult.Continue;
+		}
+
+		private HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+		{
+			CCSPlayerController? player = @event.Userid;
+			if (player == null || !player.IsValid) return HookResult.Continue;
+			g_HUD[player.Slot].RemoveAllHUD();
+			g_HUD[player.Slot].RemovePointOrient();
+			g_HUD[player.Slot].SetHUDPlayer(null);
+
+			return HookResult.Continue;
 		}
 
 		[GameEventHandler(mode: HookMode.Post)]
@@ -90,19 +107,6 @@ namespace CS2_GameHUD
 			return HookResult.Continue;
 		}
 
-		private HookResult OnEventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
-		{
-			CCSPlayerController? player = @event.Userid;
-			if(player == null || !player.IsValid) return HookResult.Continue;
-			int iSlot = player.Slot;
-			for (int j = 0; j < g_HUD[iSlot].Channel.Length; j++) g_HUD[iSlot].Channel[j].RemoveHUD();
-			
-			if (g_HUD[iSlot].PointOrient != null && g_HUD[iSlot].PointOrient!.IsValid) g_HUD[iSlot].PointOrient!.Remove();
-			g_HUD[iSlot].PointOrient = null;
-			
-			return HookResult.Continue;
-		}
-
 		private HookResult OnEventRoundStart(EventRoundStart @event, GameEventInfo info)
 		{
 			Utilities.GetPlayers().Where(p => p is { IsValid: true, IsBot: false, IsHLTV: false }).ToList().ForEach(player =>
@@ -115,14 +119,11 @@ namespace CS2_GameHUD
 		private void OnOnTick()
 		{
 			if (g_bMethod) return;
-			for (int i = 0; i < g_HUD.Length; i++)
+			var t = new Task(() =>
 			{
-				CCSPlayerController? player = Utilities.GetPlayerFromSlot(i);
-				if (player != null && player.IsValid)
-				{
-					for (int j = 0; j < g_HUD[i].Channel.Length; j++) g_HUD[i].Channel[j].ShowHUD(player);
-				}
-			}
+				Parallel.ForEach(g_HUD, (hud) => hud.ShowAllHUD());
+			});
+			t.Start();
 		}
 
 		void OnTransmit(CCheckTransmitInfoList infoList)
@@ -133,44 +134,49 @@ namespace CS2_GameHUD
 
 				for (int i = 0; i < g_HUD.Length; i++)
 				{
-					if(player.Slot != i)
-						for (int j = 0; j < g_HUD[i].Channel.Length; j++)
-							if(g_HUD[i].Channel[j].WTIsValid()) info.TransmitEntities.Remove(g_HUD[i].Channel[j].WTGetIndex());
+					if (player.Slot != i)
+						foreach (var channel in g_HUD[i].Channel)
+							if (channel.Value.WTIsValid()) info.TransmitEntities.Remove(channel.Value.WTGetIndex());
 				}
 			}
 		}
 
 		private static void UpdateEvent(CCSPlayerController? player)
 		{
-			Server.NextFrame(() =>
+			var t = new Task(() =>
 			{
 				if (player != null && player.IsValid)
-					for (int j = 0; j < g_HUD[player.Slot].Channel.Length; j++)
-						if (!g_HUD[player.Slot].Channel[j].EmptyMessage())
-							g_HUD[player.Slot].Channel[j].CreateHUD();
+					Parallel.ForEach(g_HUD[player.Slot].Channel, (pair) => {
+						if (!pair.Value.EmptyMessage())
+						{
+							Server.NextFrame(() =>
+							{
+								pair.Value.CreateHUD();
+							});
+						}
+					});
+						
 			});
+			t.Start();
 		}
 
 		// --- Getters for HUD API (for direct plugin use, not required for API interface) ---
-		public static CCSPlayerPawn? GetHUDOwner(int playerSlot, int channel)
+		public static CCSPlayerPawn? GetHUDOwner(int playerSlot, byte channel)
 		{
-			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
-			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
-			return g_HUD[playerSlot].Channel[channel].GetOwner();
+			if (playerSlot >= 0 && playerSlot < g_HUD.Length && g_HUD[playerSlot].Channel.TryGetValue(channel, out HUDChannel? hudchannel)) return hudchannel.GetOwner();
+			return null;
 		}
 
-		public static string? GetHUDKeyValue(int playerSlot, int channel, string key)
+		public static string? GetHUDKeyValue(int playerSlot, byte channel, string key)
 		{
-			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
-			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
-			return g_HUD[playerSlot].Channel[channel].GetKeyValue(key);
+			if (playerSlot >= 0 && playerSlot<g_HUD.Length && g_HUD[playerSlot].Channel.TryGetValue(channel, out HUDChannel? hudchannel)) return hudchannel.GetKeyValue(key);
+			return null;
 		}
 
-		public static string? GetHUDTarget(int playerSlot, int channel)
+		public static string? GetHUDTarget(int playerSlot, byte channel)
 		{
-			if (playerSlot < 0 || playerSlot >= g_HUD.Length) return null;
-			if (channel < 0 || channel >= MAXHUDCHANNELS) return null;
-			return g_HUD[playerSlot].Channel[channel].GetTarget();
+			if (playerSlot >= 0 && playerSlot < g_HUD.Length && g_HUD[playerSlot].Channel.TryGetValue(channel, out HUDChannel? hudchannel)) return hudchannel.GetTarget();
+			return null;
 		}
 
 		public static void PrintToConsole(string sMessage)

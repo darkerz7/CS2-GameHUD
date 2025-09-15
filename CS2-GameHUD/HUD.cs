@@ -1,29 +1,25 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
 
 namespace CS2_GameHUD
 {
 	public class HUD
 	{
-		
-		readonly int iSlot;
-		public HUDChannel[] Channel;
-		public CPointOrient? PointOrient;
-		public HUD(int slot)
+		CCSPlayerController? HUDPlayer;
+		public Dictionary<byte, HUDChannel> Channel = [];
+		CPointOrient? PointOrient;
+
+		public void SetHUDPlayer(CCSPlayerController? player)
 		{
-			iSlot = slot;
-			Channel = new HUDChannel[GameHUD.MAXHUDCHANNELS];
-			for (int i = 0; i < Channel.Length; i++) Channel[i] = new HUDChannel(iSlot);
+			HUDPlayer = player;
 		}
 
 		public bool CreateOrGetPointOrient()
 		{
 			if (PointOrient != null && PointOrient.IsValid) return true;
 
-			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(iSlot);
-			if (hudplayer == null || !hudplayer.IsValid) return false;
-			var pawn = hudplayer.Pawn.Value!;
+			if (HUDPlayer == null || !HUDPlayer.IsValid) return false;
+			var pawn = HUDPlayer.Pawn.Value!;
 
 			CPointOrient? entOrient = Utilities.CreateEntityByName<CPointOrient>("point_orient");
 			if (entOrient == null || !entOrient.IsValid) return false;
@@ -41,17 +37,50 @@ namespace CS2_GameHUD
 			PointOrient = entOrient;
 			return true;
 		}
+
+		public void RemovePointOrient()
+		{
+			if (PointOrient != null && PointOrient.IsValid) PointOrient.Remove();
+			PointOrient = null;
+		}
+
+		public CPointOrient? GetPointOrient()
+		{
+			return PointOrient;
+		}
+
+		public HUDChannel? CreateorGetChannel(byte channel)
+		{
+			if (HUDPlayer != null && HUDPlayer.IsValid && (Channel.ContainsKey(channel) || Channel.TryAdd(channel, new HUDChannel(HUDPlayer)))) return Channel[channel];
+			return null;
+		}
+
+		public void RemoveChannel(byte channel)
+		{
+			Channel.Remove(channel);
+		}
+
+		public void ShowAllHUD()
+		{
+			var t = new Task(() =>
+			{
+				if (HUDPlayer != null && HUDPlayer.IsValid)
+					Parallel.ForEach(Channel, (pair) => pair.Value.ShowHUD());
+			});
+			t.Start();
+		}
+
+		public void RemoveAllHUD()
+		{
+			Channel.Clear();
+		}
 	}
 
-	public class HUDChannel(int slot)
+	public class HUDChannel(CCSPlayerController player)
 	{
 		System.Numerics.Vector3 Position = new(0, 0, 7);
 		System.Numerics.Vector3 CurrentPosition = new();
 		System.Numerics.Vector3 CurrentAngle = new();
-
-		Vector vecForward = new();
-		Vector vecUp = new();
-		Vector vecRight = new();
 		
 		System.Drawing.Color Color = System.Drawing.Color.White;
 		int FontSize = 18;
@@ -66,16 +95,16 @@ namespace CS2_GameHUD
 		CounterStrikeSharp.API.Modules.Timers.Timer? timer;
 		CPointWorldText? WorldText;
 		string Message = "";
-		readonly int PlayerSlot = slot;
+		readonly CCSPlayerController HUDPlayer = player;
 
 		// For getter support
 		CCSPlayerPawn? LastOwner = null;
 		string? LastTarget = null;
-		Dictionary<string, string> LastKeyValues = new();
+		readonly Dictionary<string, string> LastKeyValues = [];
 
 		~HUDChannel()
 		{
-			RemoveHUD();
+			if (WTIsValid()) WorldText!.Remove();
 		}
 
 		public bool Show(string MessageText, float fTime = 1.0f)
@@ -144,15 +173,14 @@ namespace CS2_GameHUD
 		public void UpdateParams(System.Numerics.Vector3 vec, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
 			if (!WTIsValid()) return;
-			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
-			if (hudplayer == null || !hudplayer.IsValid) return;
+			if (HUDPlayer == null || !HUDPlayer.IsValid) return;
 			if (Position.X != vec.X || Position.Y != vec.Y || Position.Z != vec.Z)
 			{
 				Position.X = vec.X;
 				Position.Y = vec.Y;
 				Position.Z = vec.Z;
-				if (GameHUD.g_bMethod) GetPosition();
-				else GetPosition(hudplayer);
+				if (GameHUD.g_bMethod) GetPositionOrient();
+				else GetPositionTeleport();
 				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
@@ -161,15 +189,14 @@ namespace CS2_GameHUD
 		public void UpdateParams(float x, float y, float z, System.Drawing.Color color, int fontsize = 18, string fontname = "Verdana", float units = 0.25f, PointWorldTextJustifyHorizontal_t JH = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT, PointWorldTextJustifyVertical_t JV = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP, PointWorldTextReorientMode_t RM = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE, float BGBH = 0.0f, float BGBW = 0.0f)
 		{
 			if (!WTIsValid()) return;
-			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
-			if (hudplayer == null || !hudplayer.IsValid) return;
+			if (HUDPlayer == null || !HUDPlayer.IsValid) return;
 			if (Position.X != x || Position.Y != y || Position.Z != z)
 			{
 				Position.X = x;
 				Position.Y = y;
 				Position.Z = z;
-				if (GameHUD.g_bMethod) GetPosition();
-				else GetPosition(hudplayer);
+				if (GameHUD.g_bMethod) GetPositionOrient();
+				else GetPositionTeleport();
 				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 			UpdateParamsWithOutVector(color, fontsize, fontname, units, JH, JV, RM, BGBH, BGBW);
@@ -239,11 +266,10 @@ namespace CS2_GameHUD
 			if (WTIsValid()) WorldText!.Remove();
 			WorldText = null;
 
-			CCSPlayerController? hudplayer = Utilities.GetPlayerFromSlot(PlayerSlot);
-			if (hudplayer == null || !hudplayer.IsValid) return false;
-			var pawn = hudplayer.Pawn.Value!;
+			if (HUDPlayer == null || !HUDPlayer.IsValid) return false;
+			var pawn = HUDPlayer.Pawn.Value!;
 
-			if (GameHUD.g_bMethod && !GameHUD.g_HUD[PlayerSlot].CreateOrGetPointOrient()) return false;
+			if (GameHUD.g_bMethod && !GameHUD.g_HUD[HUDPlayer.Slot].CreateOrGetPointOrient()) return false;
 
 			CPointWorldText? entity = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext");
 			if (entity == null || !entity.IsValid) return false;
@@ -270,13 +296,13 @@ namespace CS2_GameHUD
 
 			if (GameHUD.g_bMethod)
 			{
-				entity.AcceptInput("SetParent", GameHUD.g_HUD[PlayerSlot].PointOrient, null, "!activator");
-				GetPosition();
+				entity.AcceptInput("SetParent", GameHUD.g_HUD[HUDPlayer.Slot].GetPointOrient(), null, "!activator");
+				GetPositionOrient();
 				entity.Teleport(CurrentPosition, CurrentAngle, null);
 			} else
 			{
 				entity.AcceptInput("SetParent", pawn, null, "!activator");
-				GetPosition(hudplayer);
+				GetPositionTeleport();
 				entity.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 
@@ -296,36 +322,15 @@ namespace CS2_GameHUD
 			return true;
 		}
 
-		public void ShowHUD(CCSPlayerController hudplayer)
+		public void ShowHUD()
 		{
 			if (!WTIsValid() || EmptyMessage()) return;
-			GetPosition(hudplayer);
-			WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
-		}
-
-		public void RemoveHUD()
-		{
-			CloseTimer();
-			Message = "";
-			if (WTIsValid()) WorldText!.Remove();
-			WorldText = null;
-
-			Position.X = 0;
-			Position.Y = 0;
-			Position.Z = 7;
-			Color = System.Drawing.Color.White;
-			FontSize = 18;
-			FontName = "Verdana";
-			WorldUnitsPerPx = 0.25f;
-			JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT;
-			JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_TOP;
-			ReorientMode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE;
-			BackgroundBorderHeight = 0.0f;
-			BackgroundBorderWidth = 0.0f;
-
-			LastOwner = null;
-			LastTarget = null;
-			LastKeyValues.Clear();
+			GetPositionTeleport();
+			Server.NextFrame(() =>
+			{
+				if (!WTIsValid() || EmptyMessage()) return;
+				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
+			});
 		}
 
 		public bool EmptyMessage()
@@ -345,31 +350,51 @@ namespace CS2_GameHUD
 			return WorldText!.Index;
 		}
 
-		void GetPosition(CCSPlayerController hudplayer)
+		void GetPositionTeleport()
 		{
-			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)hudplayer.Pawn.Value!.V_angle;
-			NativeAPI.AngleVectors(hudplayer.Pawn.Value!.V_angle.Handle, vecForward.Handle, vecRight.Handle, vecUp.Handle);
-			CurrentPosition = (System.Numerics.Vector3)hudplayer.Pawn.Value!.AbsOrigin!;
-			CurrentPosition += (System.Numerics.Vector3)vecForward * Position.Z;
-			CurrentPosition += (System.Numerics.Vector3)vecRight * Position.X;
-			CurrentPosition += (System.Numerics.Vector3)vecUp * Position.Y;
-			CurrentPosition += new System.Numerics.Vector3(0, 0, hudplayer.Pawn.Value!.ViewOffset.Z);
+			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)HUDPlayer.Pawn.Value!.V_angle;
+			AngleVectors(Angle, out System.Numerics.Vector3 vecForward, out System.Numerics.Vector3 vecRight, out System.Numerics.Vector3 vecUp);
+
+			CurrentPosition = (System.Numerics.Vector3)HUDPlayer.Pawn.Value!.AbsOrigin!;
+			CurrentPosition += vecForward * Position.Z;
+			CurrentPosition += vecRight * Position.X;
+			CurrentPosition += vecUp * Position.Y;
+			CurrentPosition += new System.Numerics.Vector3(0, 0, HUDPlayer.Pawn.Value!.ViewOffset.Z);
 
 			CurrentAngle.Y = Angle.Y + 270;
 			CurrentAngle.Z = 90 - Angle.X;
 		}
-		void GetPosition()
+		void GetPositionOrient()
 		{
-			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsRotation!;
-			
-			NativeAPI.AngleVectors(GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsRotation!.Handle, vecForward.Handle, vecRight.Handle, vecUp.Handle);
-			CurrentPosition = (System.Numerics.Vector3)GameHUD.g_HUD[PlayerSlot].PointOrient!.AbsOrigin!;
-			CurrentPosition += (System.Numerics.Vector3)vecForward * Position.Z;
-			CurrentPosition += (System.Numerics.Vector3)vecRight * Position.X;
-			CurrentPosition += (System.Numerics.Vector3)vecUp * Position.Y;
+			CPointOrient? pointorient = GameHUD.g_HUD[HUDPlayer.Slot].GetPointOrient();
+			if (pointorient == null || !pointorient.IsValid) return;
+			System.Numerics.Vector3 Angle = (System.Numerics.Vector3)pointorient!.AbsRotation!;
+			AngleVectors(Angle, out System.Numerics.Vector3 vecForward, out System.Numerics.Vector3 vecRight, out System.Numerics.Vector3 vecUp);
+
+			CurrentPosition = (System.Numerics.Vector3)pointorient!.AbsOrigin!;
+			CurrentPosition += vecForward * Position.Z;
+			CurrentPosition += vecRight * Position.X;
+			CurrentPosition += vecUp * Position.Y;
 
 			CurrentAngle.Y = Angle.Y + 270;
 			CurrentAngle.Z = 90 - Angle.X;
+		}
+
+		static void AngleVectors(System.Numerics.Vector3 angles, out System.Numerics.Vector3 forward, out System.Numerics.Vector3 right, out System.Numerics.Vector3 up)
+		{
+			float angle = angles.Y * (MathF.PI * 2 / 360);
+			float sy = MathF.Sin(angle);
+			float cy = MathF.Cos(angle);
+			angle = angles.X * (MathF.PI * 2 / 360);
+			float sp = MathF.Sin(angle);
+			float cp = MathF.Cos(angle);
+			angle = angles.Z * (MathF.PI * 2 / 360);
+			float sr = MathF.Sin(angle);
+			float cr = MathF.Cos(angle);
+
+			forward = new(cp * cy, cp * sy, -sp);
+			right = new((-1 * sr * sp * cy) + (-1 * cr * -sy), (-1 * sr * sp * sy) + (-1 * cr * cy), -1 * sr * cp);
+			up = new((cr * sp * cy) + (-sr * -sy), (cr * sp * sy) + (-sr * cy), cr * cp);
 		}
 
 		void OnTimer()
