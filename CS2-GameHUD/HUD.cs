@@ -102,11 +102,6 @@ namespace CS2_GameHUD
 		string? LastTarget = null;
 		readonly Dictionary<string, string> LastKeyValues = [];
 
-		~HUDChannel()
-		{
-			if (WTIsValid()) WorldText!.Remove();
-		}
-
 		public bool Show(string MessageText, float fTime = 1.0f)
 		{
 			if (MessageText == null || fTime <= 0.0f) return false;
