@@ -16,7 +16,7 @@ namespace CS2_GameHUD
 		public override string ModuleName => "GameHUD";
 		public override string ModuleDescription => "Shows text to the player using static point_worldtext";
 		public override string ModuleAuthor => "DarkerZ [RUS], Oz_Lin";
-		public override string ModuleVersion => "1.DZ.3.4";
+		public override string ModuleVersion => "1.DZ.3.5";
 
 		public static HUD[] g_HUD = new HUD[65];
 		static IGameHUDAPI? _api;
@@ -109,20 +109,21 @@ namespace CS2_GameHUD
 
 		private HookResult OnEventRoundStart(EventRoundStart @event, GameEventInfo info)
 		{
-			Utilities.GetPlayers().Where(p => p is { IsValid: true, IsBot: false, IsHLTV: false }).ToList().ForEach(player =>
+			/*Utilities.GetPlayers().Where(p => p is { IsValid: true, IsBot: false, IsHLTV: false }).ToList().ForEach(player =>
 			{
 				_ = new CounterStrikeSharp.API.Modules.Timers.Timer(1.0f, () => UpdateEvent(player));
-			});
+			});*/
+			foreach(var hud in g_HUD)
+			{
+				_ = new CounterStrikeSharp.API.Modules.Timers.Timer(1.0f, () => UpdateEvent(hud.GetHUDPlayer()));
+			}
 			return HookResult.Continue;
 		}
 
 		private void OnOnTick()
 		{
 			if (g_bMethod) return;
-			Task.Run(() =>
-			{
-				Parallel.ForEach(g_HUD, (hud) => hud.ShowAllHUD());
-			});
+			foreach(var hud in g_HUD) hud.ShowAllHUD();
 		}
 
 		void OnTransmit(CCheckTransmitInfoList infoList)
@@ -142,20 +143,16 @@ namespace CS2_GameHUD
 
 		private static void UpdateEvent(CCSPlayerController? player)
 		{
-			Task.Run(() =>
+			if (player != null && player.IsValid)
 			{
-				if (player != null && player.IsValid)
-					Parallel.ForEach(g_HUD[player.Slot].Channel, (pair) => {
-						if (!pair.Value.EmptyMessage())
-						{
-							Server.NextFrame(() =>
-							{
-								pair.Value.CreateHUD();
-							});
-						}
-					});
-						
-			});
+				foreach(var pair in g_HUD[player.Slot].Channel)
+				{
+					if (!pair.Value.EmptyMessage())
+					{
+						pair.Value.CreateHUD();
+					}
+				}
+			}
 		}
 
 		// --- Getters for HUD API (for direct plugin use, not required for API interface) ---

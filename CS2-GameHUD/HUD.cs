@@ -14,6 +14,11 @@ namespace CS2_GameHUD
 			HUDPlayer = player;
 		}
 
+		public CCSPlayerController? GetHUDPlayer()
+		{
+			return HUDPlayer;
+		}
+
 		public bool CreateOrGetPointOrient()
 		{
 			if (PointOrient != null && PointOrient.IsValid) return true;
@@ -64,11 +69,8 @@ namespace CS2_GameHUD
 
 		public void ShowAllHUD()
 		{
-			Task.Run(() =>
-			{
-				if (HUDPlayer != null && HUDPlayer.IsValid)
-					Parallel.ForEach(Channel, (pair) => pair.Value.ShowHUD());
-			});
+			if (HUDPlayer != null && HUDPlayer.IsValid)
+				foreach (var pair in Channel) pair.Value.ShowHUD();
 		}
 
 		public void RemoveAllHUD()
@@ -303,7 +305,7 @@ namespace CS2_GameHUD
 				entity.Teleport(CurrentPosition, CurrentAngle, null);
 			}
 
-				WorldText = entity;
+			WorldText = entity;
 			WorldText.AcceptInput("SetMessage", null, null, Message);
 
 			// Restore last known owner, target, keyvalues if any
@@ -321,12 +323,9 @@ namespace CS2_GameHUD
 
 		public void ShowHUD()
 		{
-			Server.NextFrame(() =>
-			{
-				if (!WTIsValid() || EmptyMessage()) return;
-				GetPositionTeleport();
-				WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
-			});
+			if (!WTIsValid() || EmptyMessage()) return;
+			GetPositionTeleport();
+			WorldText!.Teleport(CurrentPosition, CurrentAngle, null);
 		}
 
 		public bool EmptyMessage()
