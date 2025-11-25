@@ -382,19 +382,12 @@ namespace CS2_GameHUD
 
 		static void AngleVectors(System.Numerics.Vector3 angles, out System.Numerics.Vector3 forward, out System.Numerics.Vector3 right, out System.Numerics.Vector3 up)
 		{
-			float angle = angles.Y * (MathF.PI * 2 / 360);
-			float sy = MathF.Sin(angle);
-			float cy = MathF.Cos(angle);
-			angle = angles.X * (MathF.PI * 2 / 360);
-			float sp = MathF.Sin(angle);
-			float cp = MathF.Cos(angle);
-			angle = angles.Z * (MathF.PI * 2 / 360);
-			float sr = MathF.Sin(angle);
-			float cr = MathF.Cos(angle);
+			(float sy, float cy) = MathF.SinCos(angles.Y * MathF.PI / 180.0f);
+			(float sp, float cp) = MathF.SinCos(angles.X * MathF.PI / 180.0f);
 
 			forward = new(cp * cy, cp * sy, -sp);
-			right = new((-1 * sr * sp * cy) + (-1 * cr * -sy), (-1 * sr * sp * sy) + (-1 * cr * cy), -1 * sr * cp);
-			up = new((cr * sp * cy) + (-sr * -sy), (cr * sp * sy) + (-sr * cy), cr * cp);
+			right = new(sy, -cy, 0);
+			up = new(sp * cy, sp * sy, cp);
 		}
 
 		void OnTimer()
