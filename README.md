@@ -2,7 +2,7 @@
 API for displaying messages to the player. GameText analogue
 
 ## Required packages:
-[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/) (Min version: 330)
+[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp/)
 
 ## Installation:
 1. Compile or copy CS2-GameHUD to `counterstrikesharp/plugins/CS2-GameHUD` folger

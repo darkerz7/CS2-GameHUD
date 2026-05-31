@@ -7,12 +7,12 @@ using CS2_GameHUDAPI;
 
 namespace CS2_GameHUDTest
 {
-	[MinimumApiVersion(330)]
+	[MinimumApiVersion(369)]
 	public class GameHUDTest : BasePlugin
 	{
 		public override string ModuleName => "GameHUD Test";
 		public override string ModuleAuthor => "DarkerZ [RUS]";
-		public override string ModuleVersion => "1.DZ.2";
+		public override string ModuleVersion => "1.DZ.3";
 
 		static IGameHUDAPI? _api;
 

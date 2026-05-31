@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 
-//VersionAPI: 1.DZ.2
+//VersionAPI: 1.DZ.3
 
 namespace CS2_GameHUDAPI
 {
